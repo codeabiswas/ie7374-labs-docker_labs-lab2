@@ -4,6 +4,7 @@ import joblib
 
 app = Flask(__name__, template_folder='templates', static_folder='statics')
 
+# Load pre-trained model and feature list from disk
 model = joblib.load('model.joblib')
 feature_names = joblib.load('feature_names.joblib')
 
@@ -19,6 +20,7 @@ def predict():
         return render_template('predict.html')
     try:
         data = request.form
+        # Build input array matching training feature order
         features = [float(data[f]) for f in feature_names]
         input_data = np.array(features).reshape(1, -1)
         prediction = model.predict(input_data)[0]
@@ -34,6 +36,7 @@ def predict():
 
 @app.route('/feature-importance')
 def feature_importance():
+    # Extract RF step from pipeline and rank features by importance
     rf = model.named_steps['clf']
     ranked = sorted(
         zip(feature_names, rf.feature_importances_.tolist()),
